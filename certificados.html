@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mis certificados — Universidad Purifika</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com;">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Open+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="topbar">
+  <div class="brand"><img src="assets/logo-purifika-white.png" alt="" onerror="this.style.display='none'"> Universidad Purifika</div>
+  <div class="user-chip"><span id="nombreUsuario"></span><button class="link" onclick="logout()">Salir</button></div>
+</div>
+<div class="shell">
+  <div class="sidebar">
+    <a href="dashboard.html">Mis cursos</a>
+    <a href="certificados.html" class="active">Mis certificados</a>
+  </div>
+  <div class="content">
+    <h1>Mis certificados</h1>
+    <p class="subtitle">Se emiten automáticamente al completar todos los videos obligatorios de un curso.</p>
+    <div id="lista"></div>
+  </div>
+</div>
+<script src="config.js"></script>
+<script src="api.js"></script>
+<script>
+const usuario = requireSession();
+document.getElementById('nombreUsuario').textContent = usuario ? usuario.Nombre : '';
+
+async function cargar() {
+  const res = await api('getCertificado', {});
+  const cont = document.getElementById('lista');
+  if (res.error) { cont.innerHTML = '<div class="panel">' + res.error + '</div>'; return; }
+  if (!res.certificados.length) { cont.innerHTML = '<div class="panel">Todavía no tienes certificados. Completa un curso para obtener el tuyo.</div>'; return; }
+  cont.innerHTML = res.certificados.map(c => `
+    <div class="panel" style="display:flex; align-items:center; justify-content:space-between;">
+      <div>
+        <div style="font-weight:600;">${c.ID_Curso}</div>
+        <div class="meta" style="font-size:12px; color:var(--charcoal);">Folio ${c.Folio} · ${new Date(c.Fecha_Emision).toLocaleDateString('es-MX')}</div>
+      </div>
+      ${c.URL_PDF ? `<a class="btn" href="${c.URL_PDF}" target="_blank" rel="noopener">Descargar</a>` : ''}
+    </div>
+  `).join('');
+}
+cargar();
+</script>
+</body>
+</html>

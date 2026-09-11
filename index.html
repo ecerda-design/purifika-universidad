@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Universidad Purifika</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com; frame-src https://drive.google.com;">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Open+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="login-wrap">
+  <form class="login-card" id="loginForm">
+    <img class="logo" src="assets/logo-purifika-navy.png" alt="Purifika" onerror="this.style.display='none'">
+    <h1 style="margin-bottom:2px;">Universidad Purifika</h1>
+    <p class="subtitle" style="margin-bottom:20px;">Capacitación para tu franquicia</p>
+    <input type="email" id="correo" placeholder="Correo" required autocomplete="username">
+    <input type="password" id="password" placeholder="Contraseña" required autocomplete="current-password">
+    <div class="error" id="loginError"></div>
+    <button class="btn" type="submit" style="width:100%;">Entrar</button>
+  </form>
+</div>
+<script src="config.js"></script>
+<script src="api.js"></script>
+<script>
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const errEl = document.getElementById('loginError');
+  errEl.textContent = '';
+  const correo = document.getElementById('correo').value.trim();
+  const password = document.getElementById('password').value;
+  try {
+    const res = await api('login', { correo, password });
+    if (res.error) { errEl.textContent = res.error; return; }
+    // Token en sessionStorage, nunca localStorage (checklist de seguridad)
+    sessionStorage.setItem('pu_token', res.token);
+    sessionStorage.setItem('pu_usuario', JSON.stringify(res.usuario));
+    window.location.href = (res.usuario.Rol === 'admin') ? 'admin.html' : 'dashboard.html';
+  } catch (err) {
+    errEl.textContent = 'No se pudo conectar. Intenta de nuevo.';
+  }
+});
+</script>
+</body>
+</html>

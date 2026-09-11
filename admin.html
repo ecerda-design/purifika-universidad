@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Universidad Purifika</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com;">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Open+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="topbar">
+  <div class="brand"><img src="assets/logo-purifika-white.png" alt="" onerror="this.style.display='none'"> Universidad Purifika · Admin</div>
+  <div class="user-chip"><span id="nombreUsuario"></span><button class="link" onclick="logout()">Salir</button></div>
+</div>
+<div class="shell">
+  <div class="sidebar">
+    <a href="admin.html" class="active">Panel general</a>
+    <a href="dashboard.html">Ver como participante</a>
+  </div>
+  <div class="content" style="max-width:1100px;">
+    <h1>Panel de administración</h1>
+    <p class="subtitle">Progreso y estadísticas de todos los usuarios.</p>
+
+    <div class="stat-grid" id="statGrid"></div>
+
+    <div class="panel">
+      <h2>Filtros</h2>
+      <div id="acordeon">
+        <div class="accordion-item">
+          <div class="accordion-header" data-target="f-franquicia">Franquicia</div>
+          <div class="accordion-body" id="f-franquicia">
+            <label><input type="checkbox" class="filtro-franquicia" value="__todas" checked> Todas</label>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <div class="accordion-header" data-target="f-estatus">Estatus de capacitación</div>
+          <div class="accordion-body" id="f-estatus">
+            <label><input type="radio" name="estatus" value="__todos" checked> Todos</label><br>
+            <label><input type="radio" name="estatus" value="completado"> Solo completados</label><br>
+            <label><input type="radio" name="estatus" value="pendiente"> Con pendientes</label>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <div class="accordion-header" data-target="f-perfil">Filtro de perfil (ej. phishing)</div>
+          <div class="accordion-body" id="f-perfil">
+            <label><input type="checkbox" class="filtro-perfil" value="__todos" checked> Todos</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Usuarios</h2>
+      <table class="admin-table" id="tablaUsuarios">
+        <thead><tr><th>Nombre</th><th>Correo</th><th>Franquicia</th><th>Perfil</th><th>Estatus</th></tr></thead>
+        <tbody><tr><td colspan="5">Cargando…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<script src="config.js"></script>
+<script src="api.js"></script>
+<script>
+const usuario = requireSession();
+if (usuario && usuario.Rol !== 'admin') window.location.href = 'dashboard.html';
+document.getElementById('nombreUsuario').textContent = usuario ? usuario.Nombre : '';
+
+document.querySelectorAll('.accordion-header').forEach(h => {
+  h.addEventListener('click', () => h.parentElement.classList.toggle('open'));
+});
+
+async function cargarStats() {
+  const res = await api('adminStats', {});
+  if (res.error) return;
+  const s = res.stats;
+  document.getElementById('statGrid').innerHTML = `
+    <div class="stat-card"><div class="num">${s.totalUsuarios}</div><div class="label">Usuarios activos</div></div>
+    <div class="stat-card"><div class="num">${s.videosCompletados}</div><div class="label">Videos completados</div></div>
+    <div class="stat-card"><div class="num">${s.videosEnProgreso}</div><div class="label">En progreso</div></div>
+    <div class="stat-card"><div class="num">${s.certificadosEmitidos}</div><div class="label">Certificados emitidos</div></div>
+  `;
+}
+
+let todosUsuarios = [];
+async function cargarUsuarios() {
+  const res = await api('adminListaUsuarios', {});
+  if (res.error) return;
+  todosUsuarios = res.usuarios;
+
+  const franquicias = [...new Set(todosUsuarios.map(u => u.Franquicia).filter(Boolean))].sort();
+  document.getElementById('f-franquicia').innerHTML = '<label><input type="checkbox" class="filtro-franquicia" value="__todas" checked> Todas</label>' +
+    franquicias.map(f => `<br><label><input type="checkbox" class="filtro-franquicia" value="${f}" checked> ${f}</label>`).join('');
+
+  const perfiles = [...new Set(todosUsuarios.flatMap(u => (u.Filtros_Perfil || '').split(',').map(s => s.trim()).filter(Boolean)))].sort();
+  document.getElementById('f-perfil').innerHTML = '<label><input type="checkbox" class="filtro-perfil" value="__todos" checked> Todos</label>' +
+    perfiles.map(p => `<br><label><input type="checkbox" class="filtro-perfil" value="${p}" checked> ${p}</label>`).join('');
+
+  document.querySelectorAll('#acordeon input').forEach(inp => inp.addEventListener('change', renderTabla));
+  renderTabla();
+}
+
+function renderTabla() {
+  const franquiciasSel = [...document.querySelectorAll('.filtro-franquicia:checked')].map(i => i.value);
+  const incluyeTodasFranquicias = franquiciasSel.includes('__todas');
+  const perfilesSel = [...document.querySelectorAll('.filtro-perfil:checked')].map(i => i.value);
+  const incluyeTodosPerfiles = perfilesSel.includes('__todos');
+
+  const filtrados = todosUsuarios.filter(u =>
+    (incluyeTodasFranquicias || franquiciasSel.includes(u.Franquicia)) &&
+    (incluyeTodosPerfiles || (u.Filtros_Perfil || '').split(',').some(p => perfilesSel.includes(p.trim())))
+  );
+
+  document.querySelector('#tablaUsuarios tbody').innerHTML = filtrados.map(u => `
+    <tr>
+      <td>${u.Nombre}</td>
+      <td>${u.Correo}</td>
+      <td>${u.Franquicia || '—'}</td>
+      <td>${u.Filtros_Perfil || '—'}</td>
+      <td><span class="badge ${u.Activo ? 'ok' : 'pend'}">${u.Activo ? 'Activo' : 'Inactivo'}</span></td>
+    </tr>
+  `).join('') || '<tr><td colspan="5">Sin resultados</td></tr>';
+}
+
+cargarStats();
+cargarUsuarios();
+</script>
+</body>
+</html>

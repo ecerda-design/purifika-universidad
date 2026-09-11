@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi capacitación — Universidad Purifika</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com;">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Open+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="topbar">
+  <div class="brand"><img src="assets/logo-purifika-white.png" alt="" onerror="this.style.display='none'"> Universidad Purifika</div>
+  <div class="user-chip"><span id="nombreUsuario"></span><button class="link" onclick="logout()">Salir</button></div>
+</div>
+<div class="shell">
+  <div class="sidebar">
+    <a href="dashboard.html" class="active">Mis cursos</a>
+    <a href="certificados.html">Mis certificados</a>
+  </div>
+  <div class="content">
+    <h1>Mi capacitación</h1>
+    <p class="subtitle">Completa el tronco común en orden. Las capacitaciones marcadas como obligatorias tienen prioridad.</p>
+    <div id="cursos"></div>
+  </div>
+</div>
+<script src="config.js"></script>
+<script src="api.js"></script>
+<script>
+const usuario = requireSession();
+document.getElementById('nombreUsuario').textContent = usuario ? usuario.Nombre : '';
+
+async function cargar() {
+  const res = await api('getDashboard', {});
+  const cont = document.getElementById('cursos');
+  if (res.error) { cont.innerHTML = '<div class="panel">' + res.error + '</div>'; return; }
+
+  cont.innerHTML = res.cursos.map(curso => {
+    const total = curso.Videos.length;
+    const completados = curso.Videos.filter(v => v.Estatus === 'completado').length;
+    return `
+    <div class="panel curso-block">
+      <div class="curso-header">
+        <h2>${curso.Nombre}</h2>
+        <span class="tag">${completados}/${total} completados</span>
+      </div>
+      ${curso.Videos.map((v, i) => `
+        <div class="video-row ${v.Estatus === 'completado' ? 'completado' : ''} ${v.Bloqueado ? 'bloqueado' : ''}">
+          <div class="num">${v.Estatus === 'completado' ? '✓' : (i + 1)}</div>
+          <div class="info">
+            <div class="titulo">${v.Titulo}${v.TieneExamen ? ' <span class="meta">· con examen</span>' : ''}</div>
+            <div class="meta">${v.Bloqueado ? 'Completa el video anterior para desbloquear' : (v.Estatus === 'completado' ? 'Completado' : 'Pendiente')}</div>
+          </div>
+          <a class="btn-ver" href="player.html?id=${v.ID_Video}">${v.Estatus === 'completado' ? 'Repasar' : 'Ver'} →</a>
+        </div>
+      `).join('')}
+    </div>`;
+  }).join('') || '<div class="panel">No tienes cursos asignados todavía.</div>';
+}
+cargar();
+</script>
+</body>
+</html>
