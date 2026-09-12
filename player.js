@@ -5,6 +5,7 @@ const idVideo = params.get('id');
 let videoActual = null;
 let checkpointsMostrados = new Set();
 let seguimientoIniciado = false;
+let inicioReal = null; // timestamp real (Date.now()) de cuando se abrió el video
 
 async function cargar() {
   const res = await api('getVideo', { idVideo });
@@ -13,9 +14,11 @@ async function cargar() {
   document.getElementById('tituloVideo').textContent = videoActual.Titulo;
 
   // Nota: el video vive en Vimeo pero el embed en iframe está restringido por dominio
-  // a nivel de cuenta de Vimeo (fuera de nuestro control). En vez de incrustarlo,
-  // se abre en una pestaña nueva y el seguimiento se simula con un temporizador
-  // basado en Duracion_Seg a partir de que el usuario da clic en "Ver video".
+  // a nivel de cuenta de Vimeo (fuera de nuestro control), así que no hay forma de
+  // recibir eventos reales de reproducción (play/pause/ended). En vez de simular con
+  // un contador automático, se mide tiempo REAL transcurrido (Date.now()) desde que
+  // el usuario abre el video, y al llegar a la duración del video se le pide una
+  // confirmación explícita — no se auto-marca como visto.
   document.getElementById('videoLaunch').addEventListener('click', abrirVideo);
 }
 
@@ -23,37 +26,74 @@ function abrirVideo() {
   window.open(videoActual.URL_Vimeo, '_blank', 'noopener');
   if (!seguimientoIniciado) {
     seguimientoIniciado = true;
+    inicioReal = Date.now();
     const launch = document.getElementById('videoLaunch');
     launch.classList.add('reproduciendo');
     launch.querySelector('.video-launch-text').textContent = 'Video abierto en Vimeo';
-    launch.querySelector('.video-launch-hint').textContent = 'Puedes volver a abrirlo si lo necesitas. El progreso avanza mientras esta pestaña siga abierta.';
-    document.getElementById('videoHint').textContent = 'Viendo el video…';
-    simularSeguimiento();
+    launch.querySelector('.video-launch-hint').textContent = 'Puedes volver a abrirlo si lo necesitas.';
+    iniciarEspera();
   }
 }
 
-function simularSeguimiento() {
-  let segundo = 0;
+function iniciarEspera() {
   const duracion = videoActual.Duracion_Seg || 300;
+  document.getElementById('videoHint').textContent = `Viendo el video… (${formatoTiempo(duracion)})`;
+
   const intervalo = setInterval(async () => {
-    segundo += 5;
+    const transcurridoReal = Math.floor((Date.now() - inicioReal) / 1000);
+    const segundo = Math.min(transcurridoReal, duracion);
+
     (videoActual.Checkpoints || []).forEach(cp => {
       if (segundo >= cp.segundo && !checkpointsMostrados.has(cp.segundo)) {
         checkpointsMostrados.add(cp.segundo);
         mostrarCheckpoint(cp.mensaje);
       }
     });
-    const res = await api('updateProgreso', { idVideo, segundoActual: Math.min(segundo, duracion) });
-    if (segundo >= duracion) {
+
+    // Se reporta progreso parcial (tope en 90% de la duración) para que el estatus
+    // quede "en_progreso" sin cruzar el umbral de 95% que el backend usa para marcar
+    // "completado" — esa marca final solo debe ocurrir en la confirmación explícita.
+    const topeIntermedio = Math.floor(duracion * 0.9);
+    await api('updateProgreso', { idVideo, segundoActual: Math.min(segundo, topeIntermedio) });
+
+    if (transcurridoReal >= duracion) {
       clearInterval(intervalo);
-      if (res.completadoSinExamen) {
-        document.getElementById('videoHint').textContent = 'Video completado. ¡Buen trabajo!';
-        document.getElementById('examenWrap').innerHTML = '<a class="btn" href="dashboard.html">Continuar →</a>';
-      } else {
-        habilitarExamen();
-      }
+      mostrarConfirmacionManual();
+    } else {
+      document.getElementById('videoHint').textContent = `Viendo el video… (${formatoTiempo(duracion - transcurridoReal)} restantes)`;
     }
   }, 5000);
+}
+
+function formatoTiempo(segundos) {
+  const m = Math.floor(segundos / 60);
+  const s = segundos % 60;
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+function mostrarConfirmacionManual() {
+  document.getElementById('videoHint').textContent = 'Ya pasó el tiempo de duración del video.';
+  document.getElementById('confirmarWrap').innerHTML = `
+    <div class="panel" style="background:#F1FCFC; border:1px solid var(--cyan); margin-top:12px;">
+      <p style="margin:0 0 12px; font-size:14px;">Confirma que viste el video completo en Vimeo para continuar.</p>
+      <button class="btn" id="btnConfirmarVisto">Ya vi el video completo</button>
+    </div>`;
+  document.getElementById('btnConfirmarVisto').addEventListener('click', confirmarVisto);
+}
+
+async function confirmarVisto() {
+  const btn = document.getElementById('btnConfirmarVisto');
+  btn.disabled = true;
+  btn.textContent = 'Guardando…';
+  const duracion = videoActual.Duracion_Seg || 300;
+  const res = await api('updateProgreso', { idVideo, segundoActual: duracion });
+  document.getElementById('confirmarWrap').innerHTML = '';
+  if (res.completadoSinExamen) {
+    document.getElementById('videoHint').textContent = 'Video completado. ¡Buen trabajo!';
+    document.getElementById('examenWrap').innerHTML = '<a class="btn" href="dashboard.html">Continuar →</a>';
+  } else {
+    habilitarExamen();
+  }
 }
 
 function mostrarCheckpoint(mensaje) {
