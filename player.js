@@ -4,6 +4,7 @@ const params = new URLSearchParams(window.location.search);
 const idVideo = params.get('id');
 let videoActual = null;
 let checkpointsMostrados = new Set();
+let seguimientoIniciado = false;
 
 async function cargar() {
   const res = await api('getVideo', { idVideo });
@@ -11,17 +12,24 @@ async function cargar() {
   videoActual = res.video;
   document.getElementById('tituloVideo').textContent = videoActual.Titulo;
 
-  // Vimeo: convertir vimeo.com/ID(/hash) al embed de player.vimeo.com/video/ID(?h=hash)
-  const m = (videoActual.URL_Vimeo || '').match(/vimeo\.com\/(\d+)(?:\/([a-zA-Z0-9]+))?/);
-  const embedUrl = m ? `https://player.vimeo.com/video/${m[1]}${m[2] ? '?h=' + m[2] : ''}` : videoActual.URL_Vimeo;
-  document.getElementById('videoFrame').src = embedUrl;
+  // Nota: el video vive en Vimeo pero el embed en iframe está restringido por dominio
+  // a nivel de cuenta de Vimeo (fuera de nuestro control). En vez de incrustarlo,
+  // se abre en una pestaña nueva y el seguimiento se simula con un temporizador
+  // basado en Duracion_Seg a partir de que el usuario da clic en "Ver video".
+  document.getElementById('videoLaunch').addEventListener('click', abrirVideo);
+}
 
-  // Nota: Vimeo permite eventos de tiempo reales vía su Player SDK (@vimeo/player),
-  // pero para mantener el frontend sin dependencias de build se simula el avance con
-  // un temporizador basado en Duracion_Seg y se guarda progreso periódicamente;
-  // los checkpoints se muestran en los segundos definidos en Checkpoints_JSON.
-  // (Mejora futura: cargar player.js de Vimeo y usar player.on('timeupdate') para precisión real.)
-  simularSeguimiento();
+function abrirVideo() {
+  window.open(videoActual.URL_Vimeo, '_blank', 'noopener');
+  if (!seguimientoIniciado) {
+    seguimientoIniciado = true;
+    const launch = document.getElementById('videoLaunch');
+    launch.classList.add('reproduciendo');
+    launch.querySelector('.video-launch-text').textContent = 'Video abierto en Vimeo';
+    launch.querySelector('.video-launch-hint').textContent = 'Puedes volver a abrirlo si lo necesitas. El progreso avanza mientras esta pestaña siga abierta.';
+    document.getElementById('videoHint').textContent = 'Viendo el video…';
+    simularSeguimiento();
+  }
 }
 
 function simularSeguimiento() {

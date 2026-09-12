@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Capacitación — Universidad Purifika</title>
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com; frame-src https://player.vimeo.com https://drive.google.com;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com; frame-src https://drive.google.com;">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Open+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -20,8 +20,12 @@
     <a href="dashboard.html" class="btn secondary" style="display:inline-block; margin-bottom:16px;">← Volver a mis cursos</a>
     <div class="panel">
       <h1 id="tituloVideo">Cargando…</h1>
-      <div class="video-frame">
-        <iframe id="videoFrame" allow="autoplay"></iframe>
+      <div class="video-frame" id="videoFrame">
+        <div class="video-launch" id="videoLaunch">
+          <div class="video-launch-icon">▶</div>
+          <div class="video-launch-text">Ver video en Vimeo</div>
+          <div class="video-launch-hint">Se abre en una pestaña nueva. Cuando termines, vuelve aquí.</div>
+        </div>
         <div class="checkpoint-msg" id="checkpointMsg"></div>
       </div>
       <p class="subtitle" id="videoHint" style="margin-top:14px;">El examen se habilita al terminar de ver el video.</p>
