@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi resumen — Universidad Purifika</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com;">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Open+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="topbar">
+  <div class="brand"><img src="assets/logo-purifika-white.png" alt="" onerror="this.style.display='none'"> Universidad Purifika</div>
+  <div class="user-chip"><span id="nombreUsuario"></span><button class="link" onclick="logout()">Salir</button></div>
+</div>
+<div class="shell">
+  <div class="sidebar">
+    <a href="resumen.html" class="active">Mi resumen</a>
+    <a href="dashboard.html">Mis cursos</a>
+    <a href="certificados.html">Mis certificados</a>
+  </div>
+  <div class="content">
+    <h1>Mi resumen</h1>
+    <p class="subtitle">Tu avance general de capacitación.</p>
+
+    <div class="stat-grid" id="statGrid">
+      <div class="stat-card"><div class="num">—</div><div class="label">Horas totales</div></div>
+      <div class="stat-card"><div class="num">—</div><div class="label">Horas este periodo</div></div>
+    </div>
+
+    <div class="panel">
+      <div class="resumen-periodo-header">
+        <h2>Horas vistas</h2>
+        <div class="filtro-periodo">
+          <select id="filtroPeriodo">
+            <option value="mes_actual">Este mes</option>
+            <option value="mes_pasado">Mes pasado</option>
+            <option value="todo">Todo el tiempo</option>
+            <option value="personalizado">Rango personalizado…</option>
+          </select>
+          <span id="rangoPersonalizado" style="display:none;">
+            <input type="date" id="fechaDesde"> a <input type="date" id="fechaHasta">
+            <button class="btn secondary" id="btnAplicarRango">Aplicar</button>
+          </span>
+        </div>
+      </div>
+      <p class="subtitle" id="periodoTexto" style="margin:0;"></p>
+    </div>
+
+    <div class="panel">
+      <h2>Avance por módulo</h2>
+      <div id="modulosResumen">Cargando…</div>
+    </div>
+  </div>
+</div>
+<script src="config.js"></script>
+<script src="api.js"></script>
+<script src="resumen.js"></script>
+</body>
+</html>

@@ -171,3 +171,17 @@ table.admin-table td { padding: 10px 12px; border-bottom: 1px solid #F0F2F3; }
   .sidebar a { padding: 10px 16px; white-space: nowrap; border-left: none; border-bottom: 3px solid transparent; }
   .sidebar a.active { border-bottom-color: var(--white); }
 }
+
+/* ---------- Resumen / horas de capacitación ---------- */
+.resumen-periodo-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 4px; }
+.resumen-periodo-header h2 { margin: 0; }
+.filtro-periodo { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.filtro-periodo select, .filtro-periodo input {
+  padding: 8px 10px; border: 1px solid #D6DBDD; border-radius: 8px; font-family: var(--font); font-size: 13px; background: var(--white);
+}
+.modulo-resumen-row { padding: 12px 0; border-bottom: 1px solid #F0F2F3; }
+.modulo-resumen-row:last-child { border-bottom: none; }
+.modulo-resumen-info { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px; }
+.modulo-resumen-nombre { font-size: 14px; font-weight: 500; }
+.barra-progreso { height: 8px; background: #EDEFF0; border-radius: 4px; overflow: hidden; }
+.barra-progreso-relleno { height: 100%; background: var(--cyan); border-radius: 4px; }

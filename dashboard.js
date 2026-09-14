@@ -1,6 +1,12 @@
 const usuario = requireSession();
 document.getElementById('nombreUsuario').textContent = usuario ? usuario.Nombre : '';
 
+function formatoDuracion(segundos) {
+  const horas = segundos / 3600;
+  if (horas < 1) return Math.round(segundos / 60) + ' min';
+  return horas.toFixed(1).replace(/\.0$/, '') + ' h';
+}
+
 async function cargar() {
   const res = await api('getDashboard', {});
   const cont = document.getElementById('cursos');
@@ -19,7 +25,7 @@ async function cargar() {
         <div class="video-row ${v.Estatus === 'completado' ? 'completado' : ''} ${v.Bloqueado ? 'bloqueado' : ''}">
           <div class="num">${v.Estatus === 'completado' ? '✓' : (i + 1)}</div>
           <div class="info">
-            <div class="titulo">${v.Titulo}${v.TieneExamen ? ' <span class="meta">· con examen</span>' : ''}</div>
+            <div class="titulo">${v.Titulo} <span class="meta">· ${formatoDuracion(v.Duracion_Seg)}</span>${v.TieneExamen ? ' <span class="meta">· con examen</span>' : ''}</div>
             <div class="meta">${v.Bloqueado ? 'Completa el video anterior para desbloquear' : (v.Estatus === 'completado' ? 'Completado' : 'Pendiente')}</div>
           </div>
           <a class="btn-ver" href="player.html?id=${v.ID_Video}">${v.Estatus === 'completado' ? 'Repasar' : 'Ver'} →</a>
