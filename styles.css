@@ -1,8 +1,8 @@
 :root {
   --navy: #2B3643;
-  --cyan: #2DBDC9;
+  --cyan: #30CAD6;
   --mint: #B3FFE4;
-  --charcoal: #54565A;
+  --charcoal: #5B6770;
   --white: #FFFFFF;
   --bg: #F5F7F8;
   --danger: #D64550;
@@ -185,3 +185,115 @@ table.admin-table td { padding: 10px 12px; border-bottom: 1px solid #F0F2F3; }
 .modulo-resumen-nombre { font-size: 14px; font-weight: 500; }
 .barra-progreso { height: 8px; background: #EDEFF0; border-radius: 4px; overflow: hidden; }
 .barra-progreso-relleno { height: 100%; background: var(--cyan); border-radius: 4px; }
+
+/* ============================================================
+   UNIVERSIDAD PURIFIKA v2 — Categorías, progreso circular,
+   matriz de acceso, CRUD de usuarios
+   ============================================================ */
+
+/* ---------- Buscador ---------- */
+.buscador-wrap { margin-bottom: 20px; }
+.buscador-wrap input {
+  width: 100%; padding: 12px 16px; border: 1px solid #D6DBDD; border-radius: 10px;
+  font-family: var(--font); font-size: 14px; background: var(--white);
+}
+.buscador-wrap input:focus { outline: none; border-color: var(--cyan); }
+
+/* ---------- Resumen general (Mi resumen) ---------- */
+.resumen-general { display: flex; align-items: center; gap: 20px; }
+.resumen-general .texto { flex: 1; }
+.resumen-general .barra-progreso { height: 10px; margin-top: 8px; }
+.resumen-general .porcentaje { font-size: 26px; font-weight: 700; color: var(--navy); }
+
+/* ---------- Progreso circular ---------- */
+.progreso-circular { position: relative; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.progreso-circular svg { transform: rotate(-90deg); }
+.progreso-circular .pista { fill: none; stroke: #E7EBED; }
+.progreso-circular .relleno { fill: none; stroke: var(--cyan); stroke-linecap: round; transition: stroke-dashoffset 0.4s ease; }
+.progreso-circular .valor { position: absolute; font-weight: 700; color: var(--navy); }
+.progreso-circular.completo .relleno { stroke: var(--mint); }
+
+/* ---------- Acordeón de categorías (dashboard) ---------- */
+.categoria-bloque { border: 1px solid #E7EBED; border-radius: var(--radius); margin-bottom: 14px; overflow: hidden; background: var(--white); }
+.categoria-header {
+  display: flex; align-items: center; gap: 14px; padding: 16px 20px; cursor: pointer;
+  background: var(--white); user-select: none;
+}
+.categoria-header:hover { background: #FAFBFB; }
+.categoria-header .info { flex: 1; }
+.categoria-header .nombre { font-size: 15px; font-weight: 600; color: var(--navy); }
+.categoria-header .sub { font-size: 12px; color: var(--charcoal); margin-top: 2px; }
+.categoria-header .flecha { font-size: 13px; color: var(--cyan); transition: transform 0.2s ease; }
+.categoria-bloque.abierto .categoria-header .flecha { transform: rotate(180deg); }
+.categoria-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; background: #FBFCFC; }
+.categoria-bloque.abierto .categoria-body { max-height: 4000px; }
+.categoria-body-inner { padding: 6px 20px 16px; }
+
+/* ---------- Sidebar de categorías (ancla lateral) ---------- */
+.categorias-nav { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.categorias-nav button {
+  padding: 8px 14px; border-radius: 20px; border: 1px solid #D6DBDD; background: var(--white);
+  font-family: var(--font); font-size: 12px; font-weight: 500; color: var(--navy); cursor: pointer;
+}
+.categorias-nav button.activo { background: var(--navy); color: var(--white); border-color: var(--navy); }
+
+/* ---------- Matriz de acceso (admin) ---------- */
+.matriz-scroll { overflow-x: auto; }
+table.matriz-tabla { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 760px; }
+table.matriz-tabla th { text-align: left; padding: 10px 12px; color: var(--charcoal); font-weight: 600; border-bottom: 1px solid #E7EBED; white-space: nowrap; }
+table.matriz-tabla th.col-cat { text-align: center; font-size: 11px; writing-mode: vertical-rl; text-orientation: mixed; padding: 10px 6px; }
+table.matriz-tabla td { padding: 9px 12px; border-bottom: 1px solid #F0F2F3; }
+table.matriz-tabla td.col-cat { text-align: center; }
+table.matriz-tabla tr.fila-cambiada td { background: #FFF8EC; }
+table.matriz-tabla input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
+.matriz-acciones { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
+
+/* ---------- Filtro "ver como puesto" (solo admin) ---------- */
+.filtro-vista-admin {
+  display: flex; align-items: center; gap: 10px; padding: 12px 16px; margin-bottom: 16px;
+  background: #FFF8EC; border: 1px solid #FFE1B3; border-radius: 8px; font-size: 13px;
+}
+.filtro-vista-admin select {
+  padding: 7px 10px; border: 1px solid #D6DBDD; border-radius: 6px; font-family: var(--font); font-size: 13px; background: var(--white);
+}
+.filtro-vista-admin .tag-admin { background: var(--navy); color: var(--white); font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; letter-spacing: 0.3px; }
+
+/* ---------- Tabs (admin: Usuarios / Matriz / Contenido) ---------- */
+.admin-tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid #E7EBED; }
+.admin-tabs button {
+  padding: 11px 18px; border: none; background: none; font-family: var(--font); font-size: 14px; font-weight: 500;
+  color: var(--charcoal); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px;
+}
+.admin-tabs button.activo { color: var(--navy); border-bottom-color: var(--cyan); font-weight: 600; }
+.admin-panel { display: none; }
+.admin-panel.activo { display: block; }
+
+/* ---------- Modal (alta/edición de usuario) ---------- */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(43,54,67,0.55); display: none;
+  align-items: center; justify-content: center; z-index: 100; padding: 20px;
+}
+.modal-overlay.show { display: flex; }
+.modal-box { background: var(--white); border-radius: 14px; padding: 28px; width: 100%; max-width: 560px; max-height: 88vh; overflow-y: auto; }
+.modal-box h2 { margin-bottom: 4px; }
+.modal-box .subtitle { margin-bottom: 20px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-grid .full { grid-column: 1 / -1; }
+.form-grid label { display: block; font-size: 12px; font-weight: 600; color: var(--charcoal); margin-bottom: 5px; }
+.form-grid input, .form-grid select {
+  width: 100%; padding: 10px 12px; border: 1px solid #D6DBDD; border-radius: 8px;
+  font-family: var(--font); font-size: 14px; margin-bottom: 4px;
+}
+.form-grid input:focus, .form-grid select:focus { outline: none; border-color: var(--cyan); }
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
+.form-error { color: var(--danger); font-size: 13px; margin-top: 10px; min-height: 16px; }
+
+/* ---------- Botones pequeños de tabla ---------- */
+.btn-mini { font-size: 12px; padding: 5px 12px; border-radius: 6px; border: 1px solid #D6DBDD; background: var(--white); color: var(--navy); cursor: pointer; font-family: var(--font); }
+.btn-mini:hover { border-color: var(--cyan); color: var(--cyan); }
+.btn-mini.peligro:hover { border-color: var(--danger); color: var(--danger); }
+
+@media (max-width: 720px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .resumen-general { flex-direction: column; align-items: flex-start; }
+}
