@@ -17,14 +17,32 @@
 </div>
 <div class="shell">
   <div class="sidebar">
+    <a href="dashboard.html" class="active">Mi capacitación</a>
     <a href="resumen.html">Mi resumen</a>
-    <a href="dashboard.html" class="active">Mis cursos</a>
-    <a href="certificados.html">Mis certificados</a>
+    <a href="certificados.html">Certificados</a>
+    <a href="admin.html" id="linkAdmin" style="display:none;">Panel de administración</a>
   </div>
   <div class="content">
     <h1>Mi capacitación</h1>
-    <p class="subtitle">Completa el tronco común en orden. Las capacitaciones marcadas como obligatorias tienen prioridad.</p>
-    <div id="cursos"></div>
+    <p class="subtitle">Tu progreso por categoría. Da clic en una categoría para ver sus videos.</p>
+
+    <div class="panel" id="panelResumen" style="display:none;">
+      <div class="resumen-general">
+        <div class="progreso-circular" id="anilloGeneral" data-size="86"></div>
+        <div class="texto">
+          <div class="sub" style="font-size:12px;color:var(--charcoal);">Progreso general</div>
+          <div id="resumenTexto" style="font-size:14px;font-weight:500;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="buscador-wrap">
+      <input type="text" id="buscador" placeholder="Buscar un video o tema…">
+    </div>
+
+    <div class="categorias-nav" id="categoriasNav"></div>
+
+    <div id="cursos">Cargando…</div>
   </div>
 </div>
 <script src="config.js"></script>
