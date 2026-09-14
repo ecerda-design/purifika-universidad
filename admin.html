@@ -20,47 +20,129 @@
     <a href="admin.html" class="active">Panel general</a>
     <a href="dashboard.html">Ver como participante</a>
   </div>
-  <div class="content" style="max-width:1100px;">
+  <div class="content" style="max-width:1140px;">
     <h1>Panel de administración</h1>
-    <p class="subtitle">Progreso y estadísticas de todos los usuarios.</p>
+    <p class="subtitle">Usuarios, control de acceso por puesto y contenido de la Universidad.</p>
 
     <div class="stat-grid" id="statGrid"></div>
 
-    <div class="panel">
-      <h2>Filtros</h2>
-      <div id="acordeon">
-        <div class="accordion-item">
-          <div class="accordion-header" data-target="f-franquicia">Franquicia</div>
-          <div class="accordion-body" id="f-franquicia">
-            <label><input type="checkbox" class="filtro-franquicia" value="__todas" checked> Todas</label>
+    <div class="admin-tabs">
+      <button class="activo" data-tab="usuarios" onclick="cambiarTab('usuarios')">Usuarios</button>
+      <button data-tab="matriz" onclick="cambiarTab('matriz')">Matriz de acceso</button>
+      <button data-tab="contenido" onclick="cambiarTab('contenido')">Contenido</button>
+    </div>
+
+    <!-- ============ USUARIOS ============ -->
+    <div class="admin-panel activo" id="panel-usuarios">
+      <div class="panel">
+        <h2>Filtros</h2>
+        <div id="acordeon">
+          <div class="accordion-item">
+            <div class="accordion-header" data-target="f-franquicia">Franquicia</div>
+            <div class="accordion-body" id="f-franquicia">
+              <label><input type="checkbox" class="filtro-franquicia" value="__todas" checked> Todas</label>
+            </div>
+          </div>
+          <div class="accordion-item">
+            <div class="accordion-header" data-target="f-estatus">Estatus</div>
+            <div class="accordion-body" id="f-estatus">
+              <label><input type="radio" name="estatus" value="__todos" checked> Todos</label><br>
+              <label><input type="radio" name="estatus" value="activo"> Solo activos</label><br>
+              <label><input type="radio" name="estatus" value="inactivo"> Solo inactivos</label>
+            </div>
+          </div>
+          <div class="accordion-item">
+            <div class="accordion-header" data-target="f-puesto">Puesto</div>
+            <div class="accordion-body" id="f-puesto">
+              <label><input type="checkbox" class="filtro-puesto" value="__todos" checked> Todos</label>
+            </div>
           </div>
         </div>
-        <div class="accordion-item">
-          <div class="accordion-header" data-target="f-estatus">Estatus de capacitación</div>
-          <div class="accordion-body" id="f-estatus">
-            <label><input type="radio" name="estatus" value="__todos" checked> Todos</label><br>
-            <label><input type="radio" name="estatus" value="completado"> Solo completados</label><br>
-            <label><input type="radio" name="estatus" value="pendiente"> Con pendientes</label>
-          </div>
+      </div>
+
+      <div class="panel">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <h2 style="margin:0;">Usuarios</h2>
+          <button class="btn" onclick="abrirModalUsuario()">+ Nuevo usuario</button>
         </div>
-        <div class="accordion-item">
-          <div class="accordion-header" data-target="f-perfil">Filtro de perfil (ej. phishing)</div>
-          <div class="accordion-body" id="f-perfil">
-            <label><input type="checkbox" class="filtro-perfil" value="__todos" checked> Todos</label>
-          </div>
+        <table class="admin-table" id="tablaUsuarios">
+          <thead><tr><th>Nombre</th><th>Correo</th><th>Puesto</th><th>Rol</th><th>Estatus</th><th></th></tr></thead>
+          <tbody><tr><td colspan="6">Cargando…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ============ MATRIZ DE ACCESO ============ -->
+    <div class="admin-panel" id="panel-matriz">
+      <div class="panel">
+        <h2>Matriz de acceso por puesto</h2>
+        <p class="subtitle">Marca qué categorías de contenido ve cada puesto. Los cambios se guardan al presionar "Guardar cambios".</p>
+        <div class="matriz-scroll">
+          <table class="matriz-tabla" id="tablaMatriz"><tbody><tr><td>Cargando…</td></tr></tbody></table>
+        </div>
+        <div class="matriz-acciones">
+          <button class="btn secondary" onclick="cargarMatriz()">Descartar cambios</button>
+          <button class="btn" onclick="guardarMatriz()">Guardar cambios</button>
         </div>
       </div>
     </div>
 
-    <div class="panel">
-      <h2>Usuarios</h2>
-      <table class="admin-table" id="tablaUsuarios">
-        <thead><tr><th>Nombre</th><th>Correo</th><th>Franquicia</th><th>Perfil</th><th>Estatus</th></tr></thead>
-        <tbody><tr><td colspan="5">Cargando…</td></tr></tbody>
-      </table>
+    <!-- ============ CONTENIDO ============ -->
+    <div class="admin-panel" id="panel-contenido">
+      <div class="panel">
+        <h2>Todos los videos</h2>
+        <p class="subtitle">Vista completa del contenido con su categoría. Usa el filtro para ver qué vería un puesto específico.</p>
+        <div class="filtro-vista-admin">
+          <span class="tag-admin">SOLO ADMIN</span>
+          <span>Ver como puesto:</span>
+          <select id="selectVerComo" onchange="filtrarContenidoPorPuesto()">
+            <option value="">— Vista completa (admin) —</option>
+          </select>
+        </div>
+        <table class="admin-table" id="tablaContenido">
+          <thead><tr><th>Módulo</th><th>Título</th><th>Categoría</th><th>Dirigido</th></tr></thead>
+          <tbody><tr><td colspan="4">Cargando…</td></tr></tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>
+
+<!-- Modal alta/edición de usuario -->
+<div class="modal-overlay" id="modalUsuario">
+  <div class="modal-box">
+    <h2 id="modalTitulo">Nuevo usuario</h2>
+    <p class="subtitle">Los campos con * son obligatorios.</p>
+    <form id="formUsuario" onsubmit="return guardarUsuario(event)">
+      <input type="hidden" id="f_ID_Usuario">
+      <div class="form-grid">
+        <div><label>Nombre(s) *</label><input id="f_Nombre" required></div>
+        <div><label>Apellido paterno</label><input id="f_Apellido_Paterno"></div>
+        <div><label>Apellido materno</label><input id="f_Apellido_Materno"></div>
+        <div><label>Correo *</label><input id="f_Correo" type="email" required></div>
+        <div><label>Teléfono</label><input id="f_Telefono"></div>
+        <div><label>Departamento</label><input id="f_Departamento"></div>
+        <div><label>Género</label>
+          <select id="f_Genero"><option value="">—</option><option>Femenino</option><option>Masculino</option><option>Otro / prefiero no decir</option></select>
+        </div>
+        <div><label>Fecha de nacimiento</label><input id="f_Fecha_Nacimiento" type="date"></div>
+        <div><label>Puesto *</label><select id="f_Puesto" required><option value="">Selecciona…</option></select></div>
+        <div><label>Franquicia</label><input id="f_Franquicia"></div>
+        <div><label>Rol *</label>
+          <select id="f_Rol" required><option value="usuario">Usuario</option><option value="admin">Administrador</option></select>
+        </div>
+        <div><label id="labelPassword">Contraseña *</label><input id="f_Password" type="password" placeholder="Mínimo 8 caracteres"></div>
+        <div class="full"><label>URL de foto (opcional)</label><input id="f_Foto_URL" placeholder="https://…"></div>
+      </div>
+      <div class="form-error" id="errorUsuario"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn secondary" onclick="cerrarModalUsuario()">Cancelar</button>
+        <button type="submit" class="btn">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script src="config.js"></script>
 <script src="api.js"></script>
 <script src="admin.js"></script>
