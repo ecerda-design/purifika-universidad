@@ -88,7 +88,7 @@ function renderTabla() {
       <td>${u.Rol === 'admin' ? 'Administrador' : 'Usuario'}</td>
       <td><span class="badge ${u.Activo ? 'ok' : 'pend'}">${u.Activo ? 'Activo' : 'Inactivo'}</span></td>
       <td style="white-space:nowrap;">
-        <button class="btn-mini" onclick='abrirModalUsuario(${JSON.stringify(u)})'>Editar</button>
+                <button class="btn-mini" onclick="abrirModalUsuarioPorId('${u.ID_Usuario}')">Editar</button>
         <button class="btn-mini ${u.Activo ? 'peligro' : ''}" onclick="cambiarEstatus('${u.ID_Usuario}')">${u.Activo ? 'Desactivar' : 'Activar'}</button>
       </td>
     </tr>
@@ -99,6 +99,10 @@ async function cambiarEstatus(idUsuario) {
   const res = await api('adminCambiarEstatusUsuario', { idUsuario });
   if (res.error) { alert(res.error); return; }
   await cargarUsuarios();
+}
+
+function abrirModalUsuarioPorId(idUsuario) {
+    abrirModalUsuario(todosUsuarios.find(u => u.ID_Usuario === idUsuario));
 }
 
 function abrirModalUsuario(u) {
