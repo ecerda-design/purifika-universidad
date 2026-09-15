@@ -102,7 +102,7 @@ function renderCategorias(mapaCategorias, filtroTexto) {
               </div>
               <a class="btn-ver" href="player.html?id=${v.ID_Video}">${v.Estatus === 'completado' ? 'Repasar' : 'Ver'} →</a>
             </div>
-          ).join('')}
+          `).join('')}
         </div>
       </div>
     </div>`;
